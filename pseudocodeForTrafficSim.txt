@@ -1,0 +1,18 @@
+Pseudocode for Traffic simulator
+getTargetSpeed()
+{
+getSpeedLimit()
+getExpectedMotionOfNextCar()	-	We should have a memory of nearby cars
+blockagesAhead?()		-	eg Junction, and is that junction free
+whatIsOurTargetSpeed?()
+isItUrgent?
+
+
+getAcceleration()
+
+
+
+
+}
+
+
