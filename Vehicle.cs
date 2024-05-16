@@ -41,6 +41,7 @@ namespace Traffic_Flow_Simulator
             float currentSpeed;
             Junction previousJunction;
             int distThroughRoute = 0;       //  Need to update upon changing road
+            Road currentRoad;
 
             public Vehicle(List<Road> route, Junction previousJunction, float currentSpeed = 0) //  First route entry is the starting route of the car
             {
@@ -142,6 +143,7 @@ namespace Traffic_Flow_Simulator
                     Console.WriteLine("Entering new road, so change in dist through route");
                 }
                 this.currentPosRelativeToRoad = newRoad.length - offset;
+                this.currentRoad = newRoad;
             }
 
             public void EnteringJunction(Junction newJunction)
