@@ -141,15 +141,7 @@ namespace Traffic_Flow_Simulator
 
             }
 
-            public List<Vehicle> FindNearCars(float searchStart, Junction startReference, float searchDistBehind, float searchDistAhead)
-            {
-
-
-
-
-
-
-            }
+            
             protected void UpdateVehiclesOnThisRoad()
             {
                 foreach (Vehicle toRemove in vehiclesToRemove)
