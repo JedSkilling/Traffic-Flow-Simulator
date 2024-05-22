@@ -52,13 +52,7 @@ namespace Traffic_Flow_Simulator
             return theta;
         }
 
-        static void SwitchCarToNewRoad(Vehicle car, Road oldRoad, Road newRoad, float overshoot)
-        {
-
-            oldRoad.RemoveCar(car);
-            newRoad.AddCar(car, overshoot); //  Also moves car into the new road
-
-        }
+        
 
         static float Magnitude(Vector2f input)
         {

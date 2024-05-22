@@ -175,6 +175,11 @@ namespace Traffic_Flow_Simulator
                 vehiclesToAdd.Add(car);
             }
 
+            public Junction[] GetStartAndEndJunction()
+            {
+                return new Junction[2] { this.junctionStart, this.junctionEnd };
+            }
+
             public List<Drawable> GetRouteRenderList()
             {
                 return routeOfRoad.GetListToRender();

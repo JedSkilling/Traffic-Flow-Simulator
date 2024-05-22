@@ -3,4 +3,6 @@ at 60ups/fps:
 	-	car at 70mph moves 0.5m per time tick
 
 
-LHD
+To specify any point you need a Road, referenceJunction and distFromTheReferenceJunction
+
+Left Hand Drive (LHD)

@@ -17,6 +17,8 @@ namespace Traffic_Flow_Simulator
             //  Will contain logic on working out appropriate speed
             //  May contain logic for checking when a junction is free?
 
+            
+
             //  Fixed values
 
 
@@ -146,39 +148,7 @@ namespace Traffic_Flow_Simulator
                 this.currentRoad = newRoad;
             }
 
-            public List<Vehicle> FindNearbyCars(float searchDistBehind, float searchDistAhead)
-            {
-                //  Limit of search will be max of distBehind and Ahead, then we just add an offset on the lower one so it starts closer to the limit+
-
-
-                //  TO DO:
-                //  Make structs for visibleJunctions (Contains dist from origin and a junction)
-                //  Make struct (or class) for road segment with offset
-
-                //  END
-
-                //  Handle starting case as it more complicated
-                //  Find which junction is ahead and which is behind
-
-                //  Add both to seen junctions along with a current distance (If current dist is within our limit)
-
-                //  Check if we fail to reach both junctions if so add the relevant road segment to a list of roadSegments
-
-                //  Start main loop
-                //  Loop through all visible junctions and find the nearest one to origin
-                //  Don't need to check if beyond max dist as we will only add if within limit
-
-                //  The one we find will be the junction we visit next
-                //  When we visit it check through all neighbour junctions (by looping through roads)
-                    //  If neighbour junctions are already visited then search through visibileRoadSegments to find the road you used to reach that
-                    //  When you find the road: (If not throw error)
-                        //  Check if road is fully covered ie is there overlap (If so add to fullyVisibileRoads and remove from roadSegments)
-                        //  If not fully covered, add our current roadSegment to the visibleRoadSegments
-
-
-
-                throw new NotImplementedException();
-            }
+            
 
             public void EnteringJunction(Junction newJunction)
             {
