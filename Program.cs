@@ -14,15 +14,16 @@ namespace Traffic_Flow_Simulator
 {
     partial class TrafficSim
     {
-        private struct VisibleJunction  //  Used in FindNearbyCars function
+        private struct JunctionWithDij  //  Used in FindNearbyCars function
         {
-            public Junction junction { get; set; }
+            public Junction baseJunction { get; set; }
             public float distFromOrigin { get; set; }
+            public float dijDist { get; set; }
         }
 
         private struct RoadSegment
         {
-            public Road road { get; set; }
+            public Road baseRoad { get; set; }
             public Junction referenceJunction { get; set; }
             public float offsetFromJunc { get; set; }
             public float lengthOfSelection { get; set; }
@@ -234,14 +235,21 @@ namespace Traffic_Flow_Simulator
             //  END
             if(distFromReferenceJunction > startRoad.length)
             {
-                Console.WriteLine("Search offset greater than road we started on")
+                Console.WriteLine("Search offset greater than length of road we started on");
+                throw new Exception();
             }
-            List<VisibleJunction> visibleJunctions = new List<VisibleJunction>();
+            else if(distFromReferenceJunction < 0)
+            {
+                Console.WriteLine("Search offset below zero");
+                throw new Exception();
+            }
+            List<JunctionWithDij> visibleJunctions = new List<JunctionWithDij>();
             List<RoadSegment> roadSegments = new List<RoadSegment>();
             List<Road> fullyVisibleRoads = new List<Road>();
 
 
             //  Handle starting case as it more complicated
+            //  Find which junction is ahead and which is behind
             Junction[] connectedJunctions = startRoad.GetStartAndEndJunction();
             Junction otherJunction = null;
             if(connectedJunctions[0] == referenceJunction)
@@ -257,16 +265,74 @@ namespace Traffic_Flow_Simulator
                 Console.WriteLine("FindNearbyCars reference junction was not connected to startRoad");
                 throw new Exception();
             }
-            float distToRefJuncFromSearchStart = 
+            float currentRoadLength = startRoad.length;
+
+            //  Calculate actual distance - FSS means From Searh Start
+            float distToRefJuncFSS = distFromReferenceJunction;
+            float distToOtherJuncFSS = currentRoadLength - distFromReferenceJunction;
+
+            //  Calculate the "distance" that we use to allow for a different search dist behind and ahead (By offsetting the start of the search to the lower one)
+            //  a dij (dijkstra) prefix means that this is the adjusted distance rather than the actual distance
+            //  This does mean we need to store the actual distance as well, but we just use the dijDistances as our heuristic
+
+            float maxSearchDist = MathF.Max(distToRefJuncFSS, distToOtherJuncFSS);
 
 
-
-
-            //  Find which junction is ahead and which is behind
+            //  Calculate our offsets
+            float dijDistToRefJunc = MathF.Max(searchDistToRefJunc, searchDistAwayFromRefJunc) - searchDistToRefJunc; 
+            float dijDistToOtherJunc = MathF.Max(searchDistToRefJunc, searchDistAwayFromRefJunc) - searchDistAwayFromRefJunc;
+            //  Add in the dists we need to travel
+            dijDistToRefJunc += distToRefJuncFSS;
+            dijDistToOtherJunc += distToOtherJuncFSS;
 
             //  Add both to seen junctions along with a current distance (If current dist is within our limit, distance will be adjusted for searchDistBehind and Ahead)
 
-            //  Check if we fail to reach both junctions, if so add the relevant road segment to a list of roadSegments
+            bool failedToReachRefJunc = false;
+            bool failedToReachOtherJunc = false;
+            if (dijDistToRefJunc < maxSearchDist)
+            {
+                visibleJunctions.Add(new JunctionWithDij
+                {
+                    baseJunction = referenceJunction,
+                    distFromOrigin = distToRefJuncFSS,
+                    dijDist = dijDistToRefJunc 
+                });
+            }
+            else
+            {
+                //  Generate correct roadSegment
+                failedToReachRefJunc = true;
+            }
+            if(dijDistToOtherJunc < maxSearchDist)
+            {
+                visibleJunctions.Add(new JunctionWithDij
+                {
+                    baseJunction = otherJunction,
+                    distFromOrigin = distToOtherJuncFSS,
+                    dijDist = dijDistToOtherJunc
+                });
+            }
+            else
+            {
+                //  Generate correct roadSegment
+                failedToReachOtherJunc = true;
+            }
+            //  Check if we fail to reach either junctions, if so add the relevant road segment to a list of roadSegments
+            if(failedToReachOtherJunc && failedToReachRefJunc)
+            {
+                roadSegments.Add(new RoadSegment
+                {
+                    baseRoad = startRoad,
+
+                })
+            }
+
+
+
+
+
+
+
 
             //  Start main loop
             //  Loop through all visible junctions and find the nearest one to origin
