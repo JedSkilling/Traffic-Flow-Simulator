@@ -324,10 +324,10 @@ namespace Traffic_Flow_Simulator
                 {
                     baseRoad = startRoad,
 
-                })
+                });
             }
-
-
+            //  ---------------------   UNSURE HOW TO HANDLE FINDING DISTANCE TO A GIVEN VEHICLE AFTER RUNNING ALGORITHM -------------------
+                //  Change RoadSegment to include it?
 
 
 
