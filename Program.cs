@@ -217,7 +217,7 @@ namespace Traffic_Flow_Simulator
             }
         }
 
-        static List<Vehicle> FindNearbyCars(float distFromReferenceJunction, Junction referenceJunction, Road startRoad, float searchDistToRefJunc, float searchDistAwayFromRefJunc, Vehicle? startVehicle = null)  //  Counts junctions as having zero distance
+        static List<Vehicle> FindNearbyCars(float distFromReferenceJunction, Junction referenceJunction, Road startRoad, float searchDistToRefJunc/*Behind car*/, float searchDistAwayFromRefJunc/*In front of car*/, Vehicle? startVehicle = null)  //  Counts junctions as having zero distance
         {
             //  searchDistToRefJunc will be BEHIND a car (if refJunction is got from previousJunction)
 
@@ -245,7 +245,9 @@ namespace Traffic_Flow_Simulator
             }
             List<JunctionWithDij> visibleJunctions = new List<JunctionWithDij>();
             List<RoadSegment> roadSegments = new List<RoadSegment>();
-            List<Road> fullyVisibleRoads = new List<Road>();
+            List<Vehicle> vehicles = new List<Vehicle>(); //    Will primarily be generated from the roadSegment list, but JunctionPaths add directly to this as we don't count their distances
+
+            //List<Road> fullyVisibleRoads = new List<Road>();  -   Rolled into roadSegments now
 
 
             //  Handle starting case as it more complicated
@@ -268,24 +270,26 @@ namespace Traffic_Flow_Simulator
             float currentRoadLength = startRoad.length;
 
             //  Calculate actual distance - FSS means From Searh Start
-            float distToRefJuncFSS = distFromReferenceJunction;
+            float distToRefJuncFSS = -distFromReferenceJunction;    //  Negative as this is the distance behind
             float distToOtherJuncFSS = currentRoadLength - distFromReferenceJunction;
 
             //  Calculate the "distance" that we use to allow for a different search dist behind and ahead (By offsetting the start of the search to the lower one)
             //  a dij (dijkstra) prefix means that this is the adjusted distance rather than the actual distance
             //  This does mean we need to store the actual distance as well, but we just use the dijDistances as our heuristic
 
-            float maxSearchDist = MathF.Max(distToRefJuncFSS, distToOtherJuncFSS);
+            float maxSearchDist = MathF.Max(-distToRefJuncFSS, distToOtherJuncFSS);
 
 
             //  Calculate our offsets
             float dijDistToRefJunc = MathF.Max(searchDistToRefJunc, searchDistAwayFromRefJunc) - searchDistToRefJunc; 
             float dijDistToOtherJunc = MathF.Max(searchDistToRefJunc, searchDistAwayFromRefJunc) - searchDistAwayFromRefJunc;
             //  Add in the dists we need to travel
-            dijDistToRefJunc += distToRefJuncFSS;
+            dijDistToRefJunc += -distToRefJuncFSS;
             dijDistToOtherJunc += distToOtherJuncFSS;
 
             //  Add both to seen junctions along with a current distance (If current dist is within our limit, distance will be adjusted for searchDistBehind and Ahead)
+
+
 
             bool failedToReachRefJunc = false;
             bool failedToReachOtherJunc = false;
@@ -317,30 +321,61 @@ namespace Traffic_Flow_Simulator
                 //  Generate correct roadSegment
                 failedToReachOtherJunc = true;
             }
-            //  Check if we fail to reach either junctions, if so add the relevant road segment to a list of roadSegments
-            if(failedToReachOtherJunc && failedToReachRefJunc)
+            //  If we fail to reach the junctions or not we still add this road segment
+            
+            roadSegments.Add(new RoadSegment
             {
-                roadSegments.Add(new RoadSegment
-                {
-                    baseRoad = startRoad,
+                baseRoad = startRoad,
+                referenceJunction = referenceJunction,
+                offsetFromJunc = distToRefJuncFSS-searchDistToRefJunc,
+                lengthOfSelection = searchDistToRefJunc+searchDistAwayFromRefJunc
 
-                });
-            }
-            //  ---------------------   UNSURE HOW TO HANDLE FINDING DISTANCE TO A GIVEN VEHICLE AFTER RUNNING ALGORITHM -------------------
-                //  Change RoadSegment to include it?
+            });
 
-
-
-
-
+            
 
             //  Start main loop
-            //  Loop through all visible junctions and find the nearest one to origin
-            //  Don't need to check if beyond max dist as we will only add if within limit
+            bool searching = true;
+            while (searching)
+            {
+                //  Don't need to check if beyond max dist as we will only add (to visibleJunctions) if within limit
+                if (visibleJunctions.Count != 0)
+                {
+                    //  Find closest visible junction
+                    JunctionWithDij closestVisJunction = visibleJunctions[0];
+                    for (int i = 1; i < visibleJunctions.Count; i++)
+                    {
+                        JunctionWithDij nextVisJunction = visibleJunctions[i];
+                        if(nextVisJunction.dijDist < closestVisJunction.dijDist)
+                        {
+                            closestVisJunction = nextVisJunction;
+                        }
+                    }
+                    //  Add all cars currently in that junction - We will not count this in the distance currently for simplicity
+                    vehicles.AddRange(closestVisJunction.baseJunction.GetVehiclesInJunction());
+
+
+                    //  Start looping through neighbouring roads
+                    List<Road> connectedRoads = closestVisJunction.baseJunction.GetConnectedRoads();
+                    foreach (Road currRoad in connectedRoads)
+                    {
+                        //  This bit is complicated - needs all the edge case handling here
+                    }
+
+
+                }
+                else
+                {
+                    searching = false;
+                }
+                
+            }
+            
+            
 
             //  The one we find will be the junction we visit next
 
-            //  Add all cars currently in that junction - We will not count this in the distance currently for simplicity
+            
             //  When we visit it check through all neighbour junctions (by looping through connected roads)
             //  If neighbour junctions are already visited then search through visibileRoadSegments to find the road you used to reach that
             //  When you find the road: (If not throw error)
