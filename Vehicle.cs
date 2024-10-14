@@ -43,7 +43,9 @@ namespace Traffic_Flow_Simulator
             float currentSpeed;
             float targetSpeed;
             Junction previousJunction;
+
             int distThroughRoute = 0;       //  Need to update upon changing road
+
             Road currentRoad;
 
             public Vehicle(List<Road> route, Junction previousJunction, float currentSpeed = 0) //  First route entry is the starting route of the car
@@ -115,7 +117,7 @@ namespace Traffic_Flow_Simulator
             void CalculateTargetSpeed()
             {   //  Repeatedly running this wouldn't change the outcome currently, but stick with Calculate as it may in future
                 
-                if (currentRoad.length - this.currentPosRelativeToRoad < 5 || this.currentPosRelativeToRoad < 10)
+                if (currentRoad.length - this.currentPosRelativeToRoad < 5 || this.currentPosRelativeToRoad < 10 || this.currentRoad.GetType() == typeof(JunctionPath))
                 {
                     this.targetSpeed = 3f;
                 }

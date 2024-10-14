@@ -166,7 +166,9 @@ namespace Traffic_Flow_Simulator
 
                 foreach (Junction junctionToDraw in junctions)
                 {
-                    //  Fills in the junctionSprites list to be drawn + starts filling in carSprites (from junction paths)
+                    //  Fills in the junctionSprites list to be drawn
+                    //  Cars are NOT drawn whilst in junctions currently - should change this
+
                     //  Each junction is currently a ring of set size
                     
                     /*Sprite juncSprite = new Sprite(junctionTexture)   Useful for when/if I want to switch to textures, may be required for cars?
