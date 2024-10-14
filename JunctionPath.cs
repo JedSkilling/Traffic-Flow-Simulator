@@ -36,6 +36,8 @@ namespace Traffic_Flow_Simulator
                     if (newPos > length)                             //  DEBUG/ERROR HANDLING
                     {
                         Console.WriteLine("New pos has been behind the road");
+                        //  Had problems with over deceleration causing speed to go briefly negative, fixed by preventing going from pos to neg speed in one tick
+                        //  Also could fix by being more careful in max deceleration
                         throw new Exception();
                     }
 

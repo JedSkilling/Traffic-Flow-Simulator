@@ -15,7 +15,7 @@ namespace Traffic_Flow_Simulator
 
             public MemoryForVehicle()
             {
-                speedlimit = 50f; //   default is 80mph?
+                speedlimit = 5f; //   default is 80mph?
             }
 
 

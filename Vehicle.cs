@@ -22,8 +22,8 @@ namespace Traffic_Flow_Simulator
             //  Fixed values
 
 
-            float maxAcceleration = 3;      //  m/s
-            float maxDeceleration = 8;      //  m/s
+            float maxAcceleration = 0.01f;      //  m/s
+            float maxDeceleration = 0.05f;      //  m/s This will be kept as positive and will need a minus before any use
 
             float vehicleLength = 3.5f;     //   metres
             float vehicleWidth = 1.5f;
@@ -41,6 +41,7 @@ namespace Traffic_Flow_Simulator
 
             float currentPosRelativeToRoad;
             float currentSpeed;
+            float targetSpeed;
             Junction previousJunction;
             int distThroughRoute = 0;       //  Need to update upon changing road
             Road currentRoad;
@@ -76,34 +77,53 @@ namespace Traffic_Flow_Simulator
 
             public float CalculateCurrentPositionAlongRoad()
             {
-                float deltaPos = GetCurrentSpeed() / fps;
+                UpdateCurrentSpeed();
+                float deltaPos = this.currentSpeed / fps;
                 float newPos = currentPosRelativeToRoad - deltaPos; //  Moving forward is subtracting from our pos relative to road
                 this.currentPosRelativeToRoad = newPos;
                 return newPos;
             }
-            float GetCurrentSpeed()
+            void UpdateCurrentSpeed()
             {
-                return currentSpeed + GetCurrentAcceleration();
+                float changeInSpeed = GetNewAcceleration();
+                if(Math.Sign(currentSpeed + changeInSpeed) != Math.Sign(currentSpeed) && currentSpeed != 0)
+                {   //  If the change in speed switches our speed from pos to negative or vice versa then we need to stop at 0 in the intermediate phase
+                    //  This also prevents harsh "braking" from somehow making us move backwards
+                    currentSpeed = 0;
+                }
+                else
+                {
+                    currentSpeed += changeInSpeed;
+                }
             }
 
-            float GetCurrentAcceleration()
+            float GetNewAcceleration()
             {
-                float targetSpeed = GetTargetSpeed();
-                if (currentSpeed < 0.9 * targetSpeed)
+                CalculateTargetSpeed();
+                if (this.currentSpeed < 0.9 * this.targetSpeed)
                 {
                     return maxAcceleration;
                 }
-                else if (currentSpeed > targetSpeed)
+                else if (this.currentSpeed > this.targetSpeed)
                 {
-                    return maxDeceleration;
+                    return -maxDeceleration;
                 }
                 return 0;
 
             }
 
-            float GetTargetSpeed()
-            {
-                return memory.GetSpeedlimit();
+            void CalculateTargetSpeed()
+            {   //  Repeatedly running this wouldn't change the outcome currently, but stick with Calculate as it may in future
+                
+                if (currentRoad.length - this.currentPosRelativeToRoad < 5 || this.currentPosRelativeToRoad < 10)
+                {
+                    this.targetSpeed = 3f;
+                }
+                else
+                {
+                    this.targetSpeed = memory.GetSpeedlimit();
+                }
+                
             }
 
 
@@ -153,6 +173,20 @@ namespace Traffic_Flow_Simulator
             public void EnteringJunction(Junction newJunction)
             {
                 this.previousJunction = newJunction;
+            }
+
+            public float GetSpeed()
+            {
+                return this.currentSpeed;
+            }
+
+            public float GetTargetSpeed()
+            {
+                if(this.targetSpeed != null)
+                {
+                    return this.targetSpeed;
+                }
+                return -1;
             }
 
             public Vector2f GetTextureScale()

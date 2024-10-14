@@ -3,6 +3,7 @@ using SFML.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using static Traffic_Flow_Simulator.TrafficSim;
@@ -175,6 +176,18 @@ namespace Traffic_Flow_Simulator
                 vehiclesToAdd.Add(car);
             }
 
+            public List<Vehicle> GetVehicles(RoadSegment? specificSegment = null)
+            {
+                if(specificSegment == null)
+                {
+                    return this.vehiclesOnThisRoad;
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public Junction[] GetStartAndEndJunction()
             {
                 return new Junction[2] { this.junctionStart, this.junctionEnd };
@@ -185,7 +198,7 @@ namespace Traffic_Flow_Simulator
                 return routeOfRoad.GetListToRender();
             }
 
-            public List<Drawable> CreateCarDrawables()
+            public List<Drawable> CreateCarDrawables(bool displayCarInfo = false)
             {
                 List<Drawable> carDrawables = new List<Drawable>();
                 foreach (Vehicle car in this.vehiclesOnThisRoad)
@@ -216,6 +229,12 @@ namespace Traffic_Flow_Simulator
                     carSprite.Position = new Vector2f(newPosAndRot[0], newPosAndRot[1]);
                     carSprite.Rotation = newPosAndRot[2];
                     carDrawables.Add(carSprite);
+                    if (displayCarInfo == true) 
+                    {
+                        Text carDetails = new Text("Pos: " + carSprite.Position.ToString() +"\nSpeed: " + car.GetSpeed() + "\nTarget Speed: " + car.GetTargetSpeed(), font, characterSize:10);
+                        carDetails.Position = carSprite.Position + new Vector2f(50,-50);
+                        carDrawables.Add(carDetails);
+                    }
 
 
                 }

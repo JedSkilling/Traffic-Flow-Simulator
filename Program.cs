@@ -25,20 +25,25 @@ namespace Traffic_Flow_Simulator
         {
             public Road baseRoad { get; set; }
             public Junction referenceJunction { get; set; }
-            public float offsetFromJunc { get; set; }
+            public float offsetFromRefJunc { get; set; }
             public float lengthOfSelection { get; set; }
         }
-
-
+        //  Debug settings
+        static bool displayAllCarInfo = true;
+        //  End of debug settings
 
         static RenderWindow window;
+        static Font font = new Font("..\\..\\..\\fonts\\arial.ttf");
+
         static float fps = 60;
+        
 
         //  Creating colours
         static Color backgroundColour = new Color(30, 57, 73);
         static Color junctionColour = new Color(0, 255, 98);
         static Color roadColour = new Color(0, 255, 215);
-        static Color carColour = new Color(187, 0, 255);    //  Created from texture so this isn't used
+
+        //static Color carColour = new Color(187, 0, 255);    //  Created from texture so this isn't used
 
         //static Texture junctionTexture = new Texture("..\\..\\..\\textures\\junctionTexture - Not transparent.png");
 
@@ -180,7 +185,7 @@ namespace Traffic_Flow_Simulator
                     roadDrawables.AddRange(currRoad.GetRouteRenderList());
                     //  Loop through cars present and draw these
                     
-                    carDrawables.AddRange(currRoad.CreateCarDrawables());
+                    carDrawables.AddRange(currRoad.CreateCarDrawables(displayAllCarInfo));
                     
                     
                 }
@@ -219,6 +224,12 @@ namespace Traffic_Flow_Simulator
 
         static List<Vehicle> FindNearbyCars(float distFromReferenceJunction, Junction referenceJunction, Road startRoad, float searchDistToRefJunc/*Behind car*/, float searchDistAwayFromRefJunc/*In front of car*/, Vehicle? startVehicle = null)  //  Counts junctions as having zero distance
         {
+            //  Principles this tries to maintain:
+            //      Avoid sudden jumps in visible cars when going through junctions
+            //      Cars won't be as aware of cars behind them compared to infront
+            //      Time complexity should not depend on total number of cars
+            //  Not currently accounted for:
+            //      Any thing in the road affecting visibility eg corners
             //  searchDistToRefJunc will be BEHIND a car (if refJunction is got from previousJunction)
 
 
@@ -254,6 +265,7 @@ namespace Traffic_Flow_Simulator
             //  Find which junction is ahead and which is behind
             Junction[] connectedJunctions = startRoad.GetStartAndEndJunction();
             Junction otherJunction = null;
+            //  Other junction is ahead of our car, reference junction is behind
             if(connectedJunctions[0] == referenceJunction)
             {
                 otherJunction = connectedJunctions[1];
@@ -269,12 +281,14 @@ namespace Traffic_Flow_Simulator
             }
             float currentRoadLength = startRoad.length;
 
-            //  Calculate actual distance - FSS means From Searh Start
+            //  Calculate actual distance : FSS means From Search Start
             float distToRefJuncFSS = -distFromReferenceJunction;    //  Negative as this is the distance behind
             float distToOtherJuncFSS = currentRoadLength - distFromReferenceJunction;
 
             //  Calculate the "distance" that we use to allow for a different search dist behind and ahead (By offsetting the start of the search to the lower one)
-            //  a dij (dijkstra) prefix means that this is the adjusted distance rather than the actual distance
+            //  We want a difference search distance for looking ahead and behind to model drivers paying more attention ahead of them
+            //  We want to put them in the same (adjusted) application of Dijkstra because tracking overlap between them is easier
+            //  a dij (dijkstra) prefix means that this is the adjusted "distance" rather than the actual distance
             //  This does mean we need to store the actual distance as well, but we just use the dijDistances as our heuristic
 
             float maxSearchDist = MathF.Max(-distToRefJuncFSS, distToOtherJuncFSS);
@@ -323,11 +337,11 @@ namespace Traffic_Flow_Simulator
             }
             //  If we fail to reach the junctions or not we still add this road segment
             
-            roadSegments.Add(new RoadSegment
+            roadSegments.Add(new RoadSegment    //  Our starting road
             {
                 baseRoad = startRoad,
                 referenceJunction = referenceJunction,
-                offsetFromJunc = distToRefJuncFSS-searchDistToRefJunc,
+                offsetFromRefJunc = distToRefJuncFSS-searchDistToRefJunc,
                 lengthOfSelection = searchDistToRefJunc+searchDistAwayFromRefJunc
 
             });

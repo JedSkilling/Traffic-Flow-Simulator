@@ -136,9 +136,24 @@ namespace Traffic_Flow_Simulator
 
 
             }
+
+            public List<Vehicle> GetVehiclesInJunction()
+            {
+                List<Vehicle> vehicles = new List<Vehicle>();
+                foreach(JunctionPath currPath in allJunctionPaths)
+                {
+                    vehicles.AddRange(currPath.GetVehicles());
+                }
+                return vehicles;
+            }
             public Vector2f GetWorldPos()
             {
                 return this.worldPos;
+            }
+
+            public List<Road> GetConnectedRoads()
+            {
+                return connectedRoads;
             }
 
             public Drawable GetDrawable()
